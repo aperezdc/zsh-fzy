@@ -1,6 +1,8 @@
 if [[ $- == *i* ]] ; then
 
-declare -r ZSH_FZY_TMUX=$(realpath "$(dirname "$0")/fzy-tmux")
+if [[ -n ${ZSH_FZY_TMUX} ]] ; then
+	ZSH_FZY_TMUX=$(realpath "$(dirname "$0")/fzy-tmux")
+fi
 
 __fzy_cmd () {
 	[[ -n ${TMUX} ]] && "${ZSH_FZY_TMUX}" || fzy ]]
