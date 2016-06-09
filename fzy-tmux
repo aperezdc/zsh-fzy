@@ -1,0 +1,153 @@
+#! /usr/bin/env zsh
+# Starts fzy in a tmux pane:
+# fzy-tmux [-u|-d [HEIGHT[%]]] [-l|-r [WIDTH[%]]] [--] [FZY OPTIONS]
+opt=''
+swap=''
+close=''
+args=()
+term=false
+skip=false
+lines=${LINES}
+
+if [[ -z ${lines} ]] ; then
+	lines=$(tput lines)
+fi
+
+while [[ $# -gt 0 ]] ; do
+	local arg=$1
+	case "${arg}" in
+		-)
+			term=true
+			;;
+		-w*|-h*|-d*|-u*|-r*|-l*)
+			if ${skip} ; then
+				args+=( "$1" )
+				shift
+				continue
+			fi
+			if [[ ${arg} =~ ^.[lrw] ]] ; then
+				opt='-h'
+				if [[ ${arg} =~ ^.l ]] ; then
+					opt="${opt} -d"
+					swap='; swap-pane -D ; select-pane -L'
+					close='; tmux swap-pane -D'
+				fi
+			else
+				opt=''
+				if [[ ${arg} =~ ^.u ]] ; then
+					opt="${opt} -d"
+					swap='; swap-pane -D ; select-pane -U'
+					close='; tmux swap-pane -D'
+				fi
+			fi
+			if [[ ${#arg[@]} -gt 2 ]] ; then
+				size=${arg:2}
+			else
+				shift
+				if [[ $1 =~ ^[0-9]+%?$ ]] ; then
+					size=$1
+				else
+					if [[ -n $1 && $1 != -- ]] ; then
+						args+=( "$1" )
+					fi
+					shift
+					continue
+				fi
+			fi
+
+			if [[ ${size} =~ %$ ]] ; then
+				size=${size:0:-1}
+				if [[ -n ${swap} ]] ; then
+					opt="${opt} -p $(( 100 - size ))"
+				else
+					opt="${opt} -p ${size}"
+				fi
+			else
+				if [[ -n ${swap} ]] ; then
+					local max
+					if [[ ${arg} =~ ^.l ]] ; then
+						max=${COLUMNS}
+						if [[ -z ${COLUMNS} ]] ; then
+							max=$(tput cols)
+						fi
+					else
+						max=${lines}
+					fi
+					size=$(( max - size ))
+					if [[ ${size} -lt 0 ]] ; then
+						size=0
+					fi
+				fi
+				opt="${opt} -l ${size}"
+			fi
+			;;
+		--)
+			skip=true
+			;;
+	esac
+	shift
+done
+
+if [[ -z ${TMUX} || ${lines} -le 15 ]] ; then
+	exec fzy "${args[@]}"
+fi
+
+zoomed=false
+if tmux list-panes -F '#F' | grep -q Z ; then
+	zoomed=true
+	original_window=$(tmux display-message -p '#{window_id}')
+	tmp_window=$(tmux new-window -d -P -F '#{window_id}'
+		"zsh -c 'while :; do for c in \\| / - \\\\; do sleep 0.2; printf
+		\"\\r%s fzy-tmux is running\\r\" \"\${c}\"; done; done'")
+	tmux swap-pane -t ${tmp_window} \; select-window -t ${tmp_window}
+fi
+
+set -e
+
+id="${RANDOM}:$$"
+argsf="${TMPDIR:-/tmp}/fzy-argsf-${id}"
+fifo1="${TMPDIR:-/tmp}/fzy-fifo1-${id}"
+fifo2="${TMPDIR:-/tmp}/fzy-fifo2-${id}"
+fifo3="${TMPDIR:-/tmp}/fzy-fifo3-${id}"
+
+cleanup () {
+	rm -f "${argsf}" "${fifo1}" "${fifo2}" "${fifo3}"
+	if ${zoomed} ; then
+		tmux swap-pane -t ${original_window} \; \
+			select-window -t ${original_window} \; \
+			kill-window -t ${tmp_window} \; \
+			resize-pane -Z
+	fi
+}
+trap cleanup EXIT INT TERM
+
+mkfifo -m o+w "${fifo2}"
+mkfifo -m o+w "${fifo3}"
+
+opts=""
+for arg in "${args[@]}" ; do
+	arg=${arg//\\/\\\\}
+	arg=${arg//\"/\\\"}
+	arg=${arg//\`/\\\`}
+	opts="${opts} \"${arg}\""
+done
+
+if ${term} || [[ -t 0 ]] ; then
+	cat > "${argsf}" <<< "fzy ${opts} -l \${LINES} > '${fifo2}' ; echo \? > '${fifo3}' ${close}"
+	tmux \
+		set-window-option synchronize-panes off \; \
+		set-window-option remain-on-exit    off \; \
+		split-window ${opt} "cd $(printf %q "${PWD}"); zsh '${argsf}'" ${swap} \
+		> /dev/null 2>&1
+else
+	mkfifo "${fifo1}"
+	cat > "${argsf}" <<< "fzy ${opts} -l \${LINES} < '${fifo1}' > '${fifo2}' ; echo \? > '${fifo3}' ${close}"
+	tmux \
+		set-window-option synchronize-panes off \; \
+		set-window-option remain-on-exit    off \; \
+		split-window ${opt} "zsh '${argsf}'" ${swap} \
+		> /dev/null 2>&1
+	cat <&0 > "${fifo1}" &
+fi
+cat "${fifo2}"
+exit "$(cat "${fifo3}")"
