@@ -1,12 +1,18 @@
 if [[ $- == *i* ]] ; then
 
+declare -r ZSH_FZY_TMUX=$(realpath "$(dirname "$0")/fzy-tmux")
+
+__fzy_cmd () {
+	[[ -n ${TMUX} ]] && "${ZSH_FZY_TMUX}" || fzy ]]
+}
+
 # CTRL-T: Place the selected file path in the command line
 __fzy_fsel () {
 	command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
 			-o -type f -print \
 			-o -type d -print \
 			-o -type l -print 2> /dev/null | sed 1d | cut -b3- | \
-		fzy -p 'file> ' -l $((LINES / 3)) | while read -r item ; do
+		__fzy_cmd -p 'file> ' | while read -r item ; do
 		echo -n "${(q)item}"
 	done
 	echo
@@ -22,7 +28,7 @@ bindkey '^T' fzy-file-widget
 # ALT-C: cd into the selected directory
 fzy-cd-widget () {
 	cd "${$(command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
-		-o -type d -print 2> /dev/null | sed 1d | cut -b3- | fzy -p 'cd> ' -l $((LINES / 3))):-.}"
+		-o -type d -print 2> /dev/null | sed 1d | cut -b3- | __fzy_cmd -p 'cd> '):-.}"
 	zle reset-prompt
 }
 zle     -N    fzy-cd-widget
@@ -31,7 +37,7 @@ bindkey '\ec' fzy-cd-widget
 # CTRL-R: Place the selected command from history in the command line
 fzy-history-widget () {
 	local selected num
-	selected=( $(fc -l -r 1 | fzy -p 'hist> ' -l $((LINES / 3)) -q "${LBUFFER//$/\\$}") )
+	selected=( $(fc -l -r 1 | __fzy_cmd -p 'hist> ' -q "${LBUFFER//$/\\$}") )
 	if [[ -n ${selected} ]] ; then
 		num=${selected[1]}
 		if [[ -n ${num} ]] ; then
