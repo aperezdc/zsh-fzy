@@ -1,5 +1,11 @@
 if [[ $- == *i* ]] ; then
 
+command -v fzy >/dev/null
+if [[ $? -ne 0 ]]; then
+    echo 'fzy is not installed. See https://github.com/jhawthorn/fzy'
+    exit 1
+fi
+
 if [[ -n ${ZSH_FZY_TMUX} ]] ; then
 	ZSH_FZY_TMUX=$(realpath "$(dirname "$0")/fzy-tmux")
 fi
