@@ -5,7 +5,7 @@ if [[ -n ${ZSH_FZY_TMUX} ]] ; then
 fi
 
 __fzy_cmd () {
-	[[ -n ${TMUX} ]] && "${ZSH_FZY_TMUX}" || fzy
+	[[ -n ${TMUX} ]] && "${ZSH_FZY_TMUX}" || fzy -q "${BUFFER:-''}"
 }
 
 # CTRL-T: Place the selected file path in the command line
