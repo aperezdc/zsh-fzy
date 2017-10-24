@@ -1,5 +1,8 @@
 if [[ $- == *i* ]] ; then
 
+# Default fzy flags.
+declare -a ZSH_FZY_FLAGS=()
+
 command -v fzy >/dev/null
 if [[ $? -ne 0 ]]; then
     echo 'fzy is not installed. See https://github.com/jhawthorn/fzy'
@@ -11,7 +14,7 @@ if [[ -n ${ZSH_FZY_TMUX} ]] ; then
 fi
 
 __fzy_cmd () {
-	[[ -n ${TMUX} ]] && "${ZSH_FZY_TMUX}" || fzy -q "${BUFFER:-''}"
+	[[ -n ${TMUX} ]] && "${ZSH_FZY_TMUX}" || fzy -q "${BUFFER:-''}" "${ZSH_FZY_FLAGS[@]}"
 }
 
 # CTRL-T: Place the selected file path in the command line
