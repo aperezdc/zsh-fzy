@@ -52,13 +52,10 @@ bindkey '\ec' fzy-cd-widget
 
 # CTRL-R: Place the selected command from history in the command line
 fzy-history-widget () {
-	local selected num
-	selected=( $(fc -l -r 1 | __fzy_cmd -p 'hist> ' -q "${LBUFFER//$/\\$}") )
-	if [[ -n ${selected} ]] ; then
-		num=${selected[1]}
-		if [[ -n ${num} ]] ; then
-			zle vi-fetch-history -n ${num}
-		fi
+	emulate -L zsh
+	local S=$(fc -l -n -r 1 | __fzy_cmd -p 'hist> ' -q "${LBUFFER//$/\\$}")
+	if [[ -n $S ]] ; then
+		LBUFFER=$S
 	fi
 	zle redisplay
 }
