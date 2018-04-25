@@ -14,7 +14,12 @@ if [[ -n ${ZSH_FZY_TMUX} ]] ; then
 fi
 
 __fzy_cmd () {
-	[[ -n ${TMUX} ]] && "${ZSH_FZY_TMUX}" || fzy -q "${BUFFER:-}" "${ZSH_FZY_FLAGS[@]}"
+	emulate -L zsh
+	local cmd='fzy'
+	if [[ -n ${TMUX} && -n ${ZSH_FZY_TMUX} ]] ; then
+		cmd=${ZSH_FZY_TMUX}
+	fi
+	"${cmd}" -q "${BUFFER:-}" "${ZSH_FZY_FLAGS[@]}"
 }
 
 # CTRL-T: Place the selected file path in the command line
