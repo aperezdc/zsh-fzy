@@ -39,13 +39,34 @@ bindkey '^T'  fzy-file-widget
 bindkey '^R'  fzy-history-widget
 ```
 
-
-Additional command line flags for `fzy` can be set using the `ZSH_FZY_FLAGS`
-array:
+Additional configuration is done using Zsh styles. The following lists the
+available styles and their defaults:
 
 ```sh
-ZSH_FZY_FLAGS=( -l 25 -s -j 4 )
-  
-# See fzy help for all available flags
+zstyle :fzy:tmux    enabled      no
 
+zstyle :fzy:history show-scores  no
+zstyle :fzy:history lines        ''
+zstyle :fzy:history prompt       'history >> '
+
+zstyle :fzy:file    show-scores  no
+zstyle :fzy:file    lines        ''
+zstyle :fzy:file    prompt       'file >> '
+
+zstyle :fzy:cd      show-scores  no
+zstyle :fzy:cd      lines        ''
+zstyle :fzy:cd      prompt       'cd >> '
 ```
+
+Setting `:fzy:tmux enabled` will use a split pane when the shell is running
+inside [Tmux](https://github.com/tmux/tmux). Currently there are no options
+to allow configuration of the Tmux pane used for the widgets. Contributions
+to address this are very welcome, as well as day-to-day testing with this
+option enabled.
+
+For each widget, the `:fzy:${widget}` context contains the following options:
+
+- `show-scores`: Whether to let `fzy` show the matching scores for each entry.
+- `lines`: The number of lines of the screen to use for the list of candidate
+  matches. If undefined, `fzy`'s default is used.
+- `prompt`: The prompt shown before the user input.
