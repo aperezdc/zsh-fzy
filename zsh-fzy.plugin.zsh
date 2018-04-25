@@ -1,3 +1,11 @@
+#! /bin/zsh
+#
+# zsh-fzy.plugin.zsh
+# Copyright (C) 2018 Adrian Perez <aperez@igalia.com>
+#
+# Distributed under terms of the MIT license.
+#
+
 # Default fzy flags.
 declare -a ZSH_FZY_FLAGS=()
 
