@@ -13,11 +13,11 @@ fi
 
 __fzy_cmd () {
 	emulate -L zsh
-	local cmd='fzy'
 	if [[ -n ${TMUX} && -n ${ZSH_FZY_TMUX} ]] ; then
-		cmd=${ZSH_FZY_TMUX}
+		"${ZSH_FZY_TMUX}" -- "${ZSH_FZY_FLAGS[@]}" "$@"
+	else
+		fzy "${ZSH_FZY_FLAGS[@]}" "$@"
 	fi
-	"${cmd}" -q "${BUFFER:-}" "${ZSH_FZY_FLAGS[@]}"
 }
 
 __fzy_fsel () {
