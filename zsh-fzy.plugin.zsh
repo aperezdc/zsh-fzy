@@ -8,7 +8,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 if [[ -n ${ZSH_FZY_TMUX} ]] ; then
-	ZSH_FZY_TMUX=$(realpath "$(dirname "$0")/fzy-tmux")
+	ZSH_FZY_TMUX="${0:A:h}/fzy-tmux"
 fi
 
 __fzy_cmd () {
