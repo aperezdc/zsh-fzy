@@ -1,5 +1,3 @@
-if [[ $- == *i* ]] ; then
-
 # Default fzy flags.
 declare -a ZSH_FZY_FLAGS=()
 
@@ -22,7 +20,6 @@ __fzy_cmd () {
 	"${cmd}" -q "${BUFFER:-}" "${ZSH_FZY_FLAGS[@]}"
 }
 
-# CTRL-T: Place the selected file path in the command line
 __fzy_fsel () {
 	command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
 			-o -type f -print \
@@ -38,19 +35,13 @@ fzy-file-widget () {
 	LBUFFER="${LBUFFER}$(__fzy_fsel)"
 	zle redisplay
 }
-zle     -N   fzy-file-widget
-bindkey '^T' fzy-file-widget
 
-# ALT-C: cd into the selected directory
 fzy-cd-widget () {
 	cd "${$(command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
 		-o -type d -print 2> /dev/null | sed 1d | cut -b3- | __fzy_cmd -p 'cd> '):-.}"
 	zle reset-prompt
 }
-zle     -N    fzy-cd-widget
-bindkey '\ec' fzy-cd-widget
 
-# CTRL-R: Place the selected command from history in the command line
 fzy-history-widget () {
 	emulate -L zsh
 	local S=$(fc -l -n -r 1 | __fzy_cmd -p 'hist> ' -q "${LBUFFER//$/\\$}")
@@ -59,7 +50,7 @@ fzy-history-widget () {
 	fi
 	zle redisplay
 }
-zle     -N   fzy-history-widget
-bindkey '^R' fzy-history-widget
 
-fi
+zle -N fzy-file-widget
+zle -N fzy-cd-widget
+zle -N fzy-history-widget
