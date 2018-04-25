@@ -14,7 +14,8 @@ if [[ -z ${ZSH_FZY} ]] ; then
 fi
 
 
-__fzy_cmd () {
+function __fzy_cmd
+{
 	emulate -L zsh
 
 	local widget=$1
@@ -41,7 +42,8 @@ __fzy_cmd () {
 	fi
 }
 
-__fzy_fsel () {
+function __fzy_fsel
+{
 	command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
 			-o -type f -print \
 			-o -type d -print \
@@ -52,20 +54,23 @@ __fzy_fsel () {
 	echo
 }
 
-fzy-file-widget () {
+function fzy-file-widget
+{
 	emulate -L zsh
 	LBUFFER="${LBUFFER}$(__fzy_fsel)"
 	zle redisplay
 }
 
-fzy-cd-widget () {
+function fzy-cd-widget
+{
 	emulate -L zsh
 	cd "${$(command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
 		-o -type d -print 2> /dev/null | sed 1d | cut -b3- | __fzy_cmd cd):-.}"
 	zle reset-prompt
 }
 
-fzy-history-widget () {
+function fzy-history-widget
+{
 	emulate -L zsh
 	local S=$(fc -l -n -r 1 | __fzy_cmd history -q "${LBUFFER//$/\\$}")
 	if [[ -n $S ]] ; then
