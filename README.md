@@ -48,14 +48,17 @@ zstyle :fzy:tmux    enabled      no
 zstyle :fzy:history show-scores  no
 zstyle :fzy:history lines        ''
 zstyle :fzy:history prompt       'history >> '
+zstyle :fzy:history command      fzy-history-default-command
 
 zstyle :fzy:file    show-scores  no
 zstyle :fzy:file    lines        ''
 zstyle :fzy:file    prompt       'file >> '
+zstyle :fzy:file    command      fzy-file-default-command
 
 zstyle :fzy:cd      show-scores  no
 zstyle :fzy:cd      lines        ''
 zstyle :fzy:cd      prompt       'cd >> '
+zstyle :fzy:cd      command      fzy-cd-default-command
 ```
 
 Setting `:fzy:tmux enabled` will use a split pane when the shell is running
@@ -70,3 +73,28 @@ For each widget, the `:fzy:${widget}` context contains the following options:
 - `lines`: The number of lines of the screen to use for the list of candidate
   matches. If undefined, `fzy`'s default is used.
 - `prompt`: The prompt shown before the user input.
+- `command`: The command executed to generate the list of candidates for
+  selection.
+
+
+### Commands
+
+Commands used to generate lists of candidate entries for completoin must
+write items to standard output, one per line. Commands
+`fzy-file-default-command`, `fzy-cd-default-command`, and
+`fzy-history-default-command` are used by default. The first two use `find(1)`
+under the hood, and you may prefer to use other tools like
+[RipGrep](https://github.com/BurntSushi/ripgrep) to produce the list of
+candidate elements shown by the widgets:
+
+```sh
+zstyle :fzy:file command rg --files
+```
+
+Note that the `command` settings are arrays, please take it into account
+when specifying them:
+
+```sh
+zstyle :fzy:file command rg --files    # Correct. Array of two elements.
+zstyle :fzy:file command 'rg --files'  # Incorrect. Array of one element.
+```

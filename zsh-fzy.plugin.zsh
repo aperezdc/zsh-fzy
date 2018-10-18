@@ -13,6 +13,24 @@ if [[ -z ${ZSH_FZY} ]] ; then
     return 1
 fi
 
+function fzy-history-default-command
+{
+	builtin fc -l -n -r 1
+}
+
+function fzy-file-default-command
+{
+	command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
+		-o -type f -print \
+		-o -type d -print \
+		-o -type l -print 2> /dev/null | sed 1d | cut -b3-
+}
+
+function fzy-cd-default-command
+{
+	command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
+		-o -type d -print 2> /dev/null | sed 1d | cut -b3- 
+}
 
 function __fzy_cmd
 {
@@ -35,20 +53,22 @@ function __fzy_cmd
 		args+=( -s )
 	fi
 
+	local -a cmd
+	zstyle -a ":fzy:${widget}" command cmd || cmd=( )
+	if [[ ${#cmd} -eq 0 ]] ; then
+		cmd=("fzy-${widget}-default-command")
+	fi
+
 	if zstyle -t :fzy:tmux enabled && [[ -n ${TMUX} ]] ; then
-		"${ZSH_FZY_TMUX}" -- "${args[@]}" "$@"
+		"${cmd[@]}" | "${ZSH_FZY_TMUX}" -- "${args[@]}" "$@"
 	else
-		"${ZSH_FZY}" "${args[@]}" "$@"
+		"${cmd[@]}" | "${ZSH_FZY}" "${args[@]}" "$@"
 	fi
 }
 
 function __fzy_fsel
 {
-	command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
-			-o -type f -print \
-			-o -type d -print \
-			-o -type l -print 2> /dev/null | sed 1d | cut -b3- | \
-		__fzy_cmd file | while read -r item ; do
+	__fzy_cmd file | while read -r item ; do
 		echo -n "${(q)item}"
 	done
 	echo
@@ -64,15 +84,14 @@ function fzy-file-widget
 function fzy-cd-widget
 {
 	emulate -L zsh
-	cd "${$(command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
-		-o -type d -print 2> /dev/null | sed 1d | cut -b3- | __fzy_cmd cd):-.}"
+	cd "${$(__fzy_cmd cd):-.}"
 	zle reset-prompt
 }
 
 function fzy-history-widget
 {
 	emulate -L zsh
-	local S=$(fc -l -n -r 1 | __fzy_cmd history -q "${LBUFFER//$/\\$}")
+	local S=$(__fzy_cmd history -q "${LBUFFER//$/\\$}")
 	if [[ -n $S ]] ; then
 		LBUFFER=$S
 	fi
