@@ -14,6 +14,9 @@ widgets:
   input (if any) as initial search query, and replaces the command line with
   the chosen one.
 
+- `fzy-proc-widget`: Starts processes selection, and inserts the chosen
+  process ID in the command line.
+
 
 ## Installation
 
@@ -37,6 +40,7 @@ configuration could be:
 bindkey '\ec' fzy-cd-widget
 bindkey '^T'  fzy-file-widget
 bindkey '^R'  fzy-history-widget
+bindkey '^P'  fzy-proc-widget
 ```
 
 Additional configuration is done using Zsh styles. The following lists the
@@ -59,6 +63,11 @@ zstyle :fzy:cd      show-scores  no
 zstyle :fzy:cd      lines        ''
 zstyle :fzy:cd      prompt       'cd >> '
 zstyle :fzy:cd      command      fzy-cd-default-command
+
+zstyle :fzy:proc    show-scores  no
+zstyle :fzy:proc    lines        ''
+zstyle :fzy:proc    prompt       'proc >> '
+zstyle :fzy:proc    command      fzy-proc-default-command
 ```
 
 Setting `:fzy:tmux enabled` will use a split pane when the shell is running
