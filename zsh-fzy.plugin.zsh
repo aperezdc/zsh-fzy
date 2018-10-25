@@ -9,8 +9,8 @@
 ZSH_FZY_TMUX="${0:A:h}/fzy-tmux"
 ZSH_FZY=$(command -v fzy)
 if [[ -z ${ZSH_FZY} ]] ; then
-    echo 'fzy is not installed. See https://github.com/jhawthorn/fzy'
-    return 1
+	echo 'fzy is not installed. See https://github.com/jhawthorn/fzy'
+	return 1
 fi
 
 function fzy-history-default-command
@@ -29,7 +29,12 @@ function fzy-file-default-command
 function fzy-cd-default-command
 {
 	command find -L . \( -path '*/\.*' -o -fstype dev -o -fstype proc \) -prune \
-		-o -type d -print 2> /dev/null | sed 1d | cut -b3- 
+		-o -type d -print 2> /dev/null | sed 1d | cut -b3-
+}
+
+function fzy-proc-default-command
+{
+	command ps -ef | sed 1d
 }
 
 function __fzy_cmd
@@ -69,9 +74,14 @@ function __fzy_cmd
 function __fzy_fsel
 {
 	__fzy_cmd file | while read -r item ; do
-		echo -n "${(q)item}"
+		echo -n "${(q)item} "
 	done
 	echo
+}
+
+function __fzy_psel
+{
+	__fzy_cmd proc | awk '{print $2}' | tr '\n' ' '
 }
 
 function fzy-file-widget
@@ -101,6 +111,15 @@ function fzy-history-widget
 	zle redisplay
 }
 
+function fzy-proc-widget
+{
+	emulate -L zsh
+	zle	-M '<fzy>'
+	LBUFFER="${LBUFFER}$(__fzy_psel)"
+	zle redisplay
+}
+
 zle -N fzy-file-widget
 zle -N fzy-cd-widget
 zle -N fzy-history-widget
+zle -N fzy-proc-widget
