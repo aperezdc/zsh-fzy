@@ -77,6 +77,7 @@ function __fzy_fsel
 function fzy-file-widget
 {
 	emulate -L zsh
+	zle -M '<fzy>'
 	LBUFFER="${LBUFFER}$(__fzy_fsel)"
 	zle redisplay
 }
@@ -84,6 +85,7 @@ function fzy-file-widget
 function fzy-cd-widget
 {
 	emulate -L zsh
+	zle -M '<fzy>'
 	cd "${$(__fzy_cmd cd):-.}"
 	zle reset-prompt
 }
@@ -91,6 +93,7 @@ function fzy-cd-widget
 function fzy-history-widget
 {
 	emulate -L zsh
+	zle -M '<fzy>'
 	local S=$(__fzy_cmd history -q "${LBUFFER//$/\\$}")
 	if [[ -n $S ]] ; then
 		LBUFFER=$S
