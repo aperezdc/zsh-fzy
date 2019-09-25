@@ -54,7 +54,7 @@ function __fzy_cmd
 	if zstyle -s ":fzy:${widget}" lines value ; then
 		if [[ ${value} = min:* ]]; then
 			local pos
-			print -n '\e[6n' > /dev/tty
+			print '\e[6n' > /dev/tty
 			read -rsd 'R' pos < /dev/tty
 			pos=${pos#*\[}
 			pos=${pos%;*}
@@ -99,15 +99,15 @@ function __fzy_psel
 function fzy-file-widget
 {
 	emulate -L zsh
-	zle -M '<fzy>'
+	zle -I
 	LBUFFER="${LBUFFER}$(__fzy_fsel)"
-	zle redisplay
+	zle reset-prompt
 }
 
 function fzy-cd-widget
 {
 	emulate -L zsh
-	zle -M '<fzy>'
+	zle -I
 	cd "${$(__fzy_cmd cd):-.}"
 	zle reset-prompt
 }
@@ -115,20 +115,20 @@ function fzy-cd-widget
 function fzy-history-widget
 {
 	emulate -L zsh
-	zle -M '<fzy>'
+	zle -I
 	local S=$(__fzy_cmd history -q "${LBUFFER//$/\\$}")
 	if [[ -n $S ]] ; then
 		LBUFFER=$S
 	fi
-	zle redisplay
+	zle reset-prompt
 }
 
 function fzy-proc-widget
 {
 	emulate -L zsh
-	zle	-M '<fzy>'
+	zle -I
 	LBUFFER="${LBUFFER}$(__fzy_psel)"
-	zle redisplay
+	zle reset-prompt
 }
 
 zle -N fzy-file-widget
