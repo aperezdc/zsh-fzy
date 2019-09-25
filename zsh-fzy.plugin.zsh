@@ -52,6 +52,18 @@ function __fzy_cmd
 		args+=( -p "${widget} >> " )
 	fi
 	if zstyle -s ":fzy:${widget}" lines value ; then
+		if [[ ${value} = min:* ]]; then
+			local pos
+			print -n '\e[6n' > /dev/tty
+			read -rsd 'R' pos < /dev/tty
+			pos=${pos#*\[}
+			pos=${pos%;*}
+			value=${value#min:}
+			local available_lines=$(( LINES - pos - 1 ))
+			if [[ ${available_lines} -gt ${value} ]]; then
+				value=${available_lines}
+			fi
+		fi
 		args+=( -l "${value}" )
 	fi
 	if zstyle -t ":fzy:${widget}" show-scores ; then

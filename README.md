@@ -81,7 +81,11 @@ For each widget, the `:fzy:${widget}` context contains the following options:
 
 - `show-scores`: Whether to let `fzy` show the matching scores for each entry.
 - `lines`: The number of lines of the screen to use for the list of candidate
-  matches. If undefined, `fzy`'s default is used.
+  matches. If undefined, `fzy`'s default is used. A value can be prefixes with
+  `min:`, which will cause `fzy` to use at least a certain amount of lines,
+  plus any additional lines which may be available below until the last row
+  of the terminal (note that this needs an [ECMA-48](https://en.wikipedia.org/wiki/ECMA-48)-capable
+  terminal (most are).
 - `prompt`: The prompt shown before the user input.
 - `command`: The command executed to generate the list of candidates for
   selection.
